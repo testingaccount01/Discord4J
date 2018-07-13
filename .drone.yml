@@ -1,31 +1,12 @@
 pipeline:
+  discord:
+    image: appleboy/drone-discord
+    secrets: [ discord_webhook_id, discord_webhook_token ]
+    message: "Testing from drone image"
   java8:
     group: build
     image: openjdk:8
     environment:
-      - GRADLE_USER_HOME=/drone/jdk8/.gradle
+      - GRADLE_USER_HOME=/drone/.gradle
     commands:
       - ./gradlew test
-  java9:
-    group: build
-    image: openjdk:9
-    environment:
-      - GRADLE_USER_HOME=/drone/jdk9/.gradle
-    commands:
-      - ./gradlew test
-  java10:
-    group: build
-    image: openjdk:10
-    environment:
-      - GRADLE_USER_HOME=/drone/jdk10/.gradle
-    commands:
-      - ./gradlew test
-  discord:
-    image: appleboy/drone-discord
-    secrets: [ webhook_id, webhook_token ]
-    message: >
-         {{#success build.status}}
-           build {{build.number}} succeeded. Good job.
-         {{else}}
-           build {{build.number}} failed. Fix me please.
-         {{/success}}
