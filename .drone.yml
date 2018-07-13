@@ -8,7 +8,7 @@ pipeline:
       - GRADLE_USER_HOME=/drone/.gradle
     commands:
       - mkdir /drone/.gradle
-      - chown -R gradle:gradle /drone/.gradle
+      - sudo chown -R gradle:gradle /drone/.gradle
       - gradle test -s
 
   discord:
