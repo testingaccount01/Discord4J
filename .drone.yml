@@ -1,0 +1,16 @@
+pipeline:
+  java8:
+    group: build
+    image: gradle:jdk8
+    commands:
+      - gradle test
+  java9:
+    group: build
+    image: gradle:jdk9
+    commands:
+      - gradle test
+  java10:
+    group: build
+    image: gradle:jdk10
+    commands:
+      - gradle test
