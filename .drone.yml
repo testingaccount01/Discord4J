@@ -1,7 +1,4 @@
-cache:
-  mount:
-    - /drone/.gradle
-
+---
 pipeline:
   java8:
     group: build
