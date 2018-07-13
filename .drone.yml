@@ -1,13 +1,14 @@
 pipeline:
   java8:
     group: build
-    image: openjdk:8
-    environment:
-      - GRADLE_USER_HOME=/drone/.gradle
+    image: gradle:4.8.1-jdk8
+    pull: true
     commands:
-      - ./gradlew test
+      - gradlew test -s
+
   discord:
     image: appleboy/drone-discord
+    pull: true
     secrets: [ discord_webhook_id, discord_webhook_token ]
     message: >
       {{#success build.status}}
