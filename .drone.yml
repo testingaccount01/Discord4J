@@ -4,7 +4,7 @@ pipeline:
     image: gradle:4.8.1-jdk8
     pull: true
     commands:
-      - gradlew test -s
+      - gradle test -s
 
   discord:
     image: appleboy/drone-discord
