@@ -1,8 +1,14 @@
+cache:
+  mount:
+    - /drone/.gradle
+
 pipeline:
   java8:
     group: build
     image: gradle:4.8.1-jdk8
     pull: true
+    environment:
+      - GRADLE_USER_HOME=/drone/.gradle
     commands:
       - gradle test -s
 
