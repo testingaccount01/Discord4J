@@ -36,7 +36,6 @@ import sx.blah.discord.handle.impl.events.guild.channel.webhook.WebhookUpdateEve
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.*;
 import sx.blah.discord.util.cache.Cache;
-import sx.blah.discord.util.cache.LongMap;
 
 import java.io.*;
 import java.time.Instant;
@@ -46,7 +45,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * The default implementation of {@link IChannel}.
@@ -700,13 +698,13 @@ public class Channel implements IChannel {
 	}
 
 	@Override
-	public LongMap<sx.blah.discord.handle.obj.PermissionOverride> getUserOverrides() {
-		return userOverrides.mapCopy();
+	public Map<Long, PermissionOverride> getUserOverrides() {
+		return userOverrides.asMap();
 	}
 
 	@Override
-	public LongMap<sx.blah.discord.handle.obj.PermissionOverride> getRoleOverrides() {
-		return roleOverrides.mapCopy();
+	public Map<Long, PermissionOverride> getRoleOverrides() {
+		return roleOverrides.asMap();
 	}
 
 	@Override

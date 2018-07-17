@@ -32,11 +32,11 @@ import sx.blah.discord.util.DiscordException;
 import sx.blah.discord.util.LogMarkers;
 import sx.blah.discord.util.PermissionUtils;
 import sx.blah.discord.util.cache.Cache;
-import sx.blah.discord.util.cache.LongMap;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Category implements ICategory {
@@ -150,7 +150,7 @@ public class Category implements ICategory {
 
 	@Override
 	public ICategory copy() {
-		return new Category(shard, name, id, guild, position, isNSFW, userOverrides.copy(), roleOverrides.copy());
+		return new Category(shard, name, id, guild, position, isNSFW, userOverrides, roleOverrides);
 	}
 
 	@Override
@@ -194,13 +194,13 @@ public class Category implements ICategory {
 	}
 
 	@Override
-	public LongMap<PermissionOverride> getUserOverrides() {
-		return userOverrides.mapCopy();
+	public Map<Long, PermissionOverride> getUserOverrides() {
+		return userOverrides.asMap();
 	}
 
 	@Override
-	public LongMap<PermissionOverride> getRoleOverrides() {
-		return roleOverrides.mapCopy();
+	public Map<Long, PermissionOverride> getRoleOverrides() {
+		return roleOverrides.asMap();
 	}
 
 	@Override

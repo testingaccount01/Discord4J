@@ -23,10 +23,10 @@ import sx.blah.discord.handle.audit.entry.TargetedEntry;
 import sx.blah.discord.handle.obj.IDiscordObject;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.cache.LongMap;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,9 +36,9 @@ import java.util.stream.Collectors;
  */
 public class AuditLog {
 
-	private final LongMap<AuditLogEntry> entries;
+	private final Map<Long, AuditLogEntry> entries;
 
-	public AuditLog(LongMap<AuditLogEntry> entries) {
+	public AuditLog(Map<Long, AuditLogEntry> entries) {
 		this.entries = entries;
 	}
 
@@ -47,7 +47,7 @@ public class AuditLog {
 	 *
 	 * @return The map of entries for the log.
 	 */
-	public LongMap<AuditLogEntry> getEntryMap() {
+	public Map<Long, AuditLogEntry> getEntryMap() {
 		return entries;
 	}
 

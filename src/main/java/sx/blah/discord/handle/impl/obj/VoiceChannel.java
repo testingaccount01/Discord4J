@@ -360,7 +360,7 @@ public class VoiceChannel extends Channel implements IVoiceChannel {
 
 	@Override
 	public IVoiceChannel copy() {
-		return new VoiceChannel(client, name, id, guild, topic, position, isNSFW, userLimit, bitrate, categoryID, roleOverrides.copy(), userOverrides.copy());
+		return new VoiceChannel(client, name, id, guild, topic, position, isNSFW, userLimit, bitrate, categoryID, roleOverrides, userOverrides);
 	}
 
 	@Override

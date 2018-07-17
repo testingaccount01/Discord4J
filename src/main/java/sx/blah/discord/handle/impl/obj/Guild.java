@@ -33,6 +33,7 @@ import sx.blah.discord.handle.audio.IAudioManager;
 import sx.blah.discord.handle.audio.impl.AudioManager;
 import sx.blah.discord.handle.audit.ActionType;
 import sx.blah.discord.handle.audit.AuditLog;
+import sx.blah.discord.handle.audit.entry.AuditLogEntry;
 import sx.blah.discord.handle.impl.events.guild.channel.webhook.WebhookCreateEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.webhook.WebhookDeleteEvent;
 import sx.blah.discord.handle.impl.events.guild.channel.webhook.WebhookUpdateEvent;
@@ -820,8 +821,7 @@ public class Guild implements IGuild {
 	@Override
 	public IGuild copy() {
 		return new Guild(shard, name, id, icon, ownerID, afkChannel, afkTimeout, regionID, verification.ordinal(),
-				systemChannelId, roles.copy(), channels.copy(), voiceChannels.copy(), users.copy(),
-				joinTimes.copy(), categories.copy());
+				systemChannelId, roles, channels, voiceChannels, users, joinTimes, categories);
 	}
 
 	@Override
@@ -1050,7 +1050,10 @@ public class Guild implements IGuild {
 			before = Long.parseLong(auditLog.audit_log_entries[auditLog.audit_log_entries.length - 1].id);
 		} while (chunk.length == 100);
 
-		return new AuditLog(retrieved.stream().map(AuditLog::getEntries).flatMap(Collection::stream).collect(LongMapCollector.toLongMap()));
+		return new AuditLog(retrieved.stream()
+                                    .map(AuditLog::getEntries)
+                                    .flatMap(Collection::stream)
+                                    .collect(Collectors.toMap(AuditLogEntry::getLongID, Function.identity())));
 	}
 
 	@Override

@@ -17,11 +17,10 @@
 
 package sx.blah.discord.handle.obj;
 
-import sx.blah.discord.util.cache.LongMap;
-
 import java.awt.Color;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Discord user.
@@ -133,7 +132,7 @@ public interface IUser extends IDiscordObject<IUser> {
 	 *
 	 * @return The user's voice states for every guild.
 	 */
-	LongMap<IVoiceState> getVoiceStates();
+	Map<Long, IVoiceState> getVoiceStates();
 
 	/**
 	 * Moves the user from one voice channel to another.

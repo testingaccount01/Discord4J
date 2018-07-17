@@ -31,7 +31,6 @@ import sx.blah.discord.util.IDLinkedObjectWrapper;
 import sx.blah.discord.util.LogMarkers;
 import sx.blah.discord.util.PermissionUtils;
 import sx.blah.discord.util.cache.Cache;
-import sx.blah.discord.util.cache.LongMap;
 
 import java.awt.Color;
 import java.util.*;
@@ -260,8 +259,8 @@ public class User implements IUser {
 	}
 
 	@Override
-	public LongMap<IVoiceState> getVoiceStates() {
-		return voiceStates.mapCopy();
+	public Map<Long, IVoiceState> getVoiceStates() {
+		return voiceStates.asMap();
 	}
 
 	@Override

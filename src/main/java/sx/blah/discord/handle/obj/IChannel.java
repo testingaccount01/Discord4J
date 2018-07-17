@@ -19,7 +19,6 @@ package sx.blah.discord.handle.obj;
 
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.util.*;
-import sx.blah.discord.util.cache.LongMap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +26,7 @@ import java.io.InputStream;
 import java.time.Instant;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A text, voice, or private channel in Discord.
@@ -627,14 +627,14 @@ public interface IChannel extends IDiscordObject<IChannel> {
 	 *
 	 * @return The user permissions overrides for the channel.
 	 */
-	LongMap<sx.blah.discord.handle.obj.PermissionOverride> getUserOverrides();
+	Map<Long, PermissionOverride> getUserOverrides();
 
 	/**
 	 * Gets the permissions overrides for roles. (Key = Role ID)
 	 *
 	 * @return The role permissions overrides for this channel.
 	 */
-	LongMap<sx.blah.discord.handle.obj.PermissionOverride> getRoleOverrides();
+	Map<Long, PermissionOverride> getRoleOverrides();
 
 	/**
 	 * Gets the permissions a user has in the channel, taking into account user and role overrides.

@@ -17,20 +17,15 @@
 
 package sx.blah.discord.util.cache;
 
-import com.koloboke.collect.set.LongSet;
-import com.koloboke.function.LongObjConsumer;
-import com.koloboke.function.LongObjFunction;
-import com.koloboke.function.LongObjPredicate;
 import sx.blah.discord.api.internal.DiscordClientImpl;
 import sx.blah.discord.handle.obj.IIDLinkedObject;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -321,53 +316,35 @@ public final class Cache<T extends IIDLinkedObject> implements Iterable<T> {
 		return delegate.parallelStream();
 	}
 
-	/**
-	 * Gets a copy of the cache.
-	 *
-	 * @return A copy of the cache.
-	 */
-	public Cache<T> copy() {
-		return new Cache<>(delegate.copy());
-	}
+    /**
+     * Performs the given action for each pair of key and value in the cache while the function returns true.
+     *
+     * @param predicate The action to perform for each pair of key and value in the cache.
+     * @return Whether iterating was interrupted (whether the predicate ever returned false).
+     */
+    public boolean forEachWhile(BiPredicate<Long, ? super T> predicate) {
+        return delegate.forEachWhile(predicate);
+    }
 
-	/**
-	 * Gets a copy of the cache as a long map.
-	 *
-	 * @return A copy of the cache as a long map.
-	 */
-	public LongMap<T> mapCopy() {
-		return delegate.mapCopy();
-	}
+    /**
+     * Gets a copy of the cache as a long map.
+     *
+     * @return A copy of the cache as a long map.
+     */
+    public Map<Long, T> asMap() {
+        return delegate.asMap();
+    }
 
-	/**
-	 * Performs the given action for each pair of key and value in the cache.
-	 *
-	 * @param action The action to perform for each pair of key and value in the cache.
-	 */
-	public void forEach(LongObjConsumer<? super T> action) {
-		delegate.forEach(action);
-	}
-
-	/**
-	 * Performs the given action for each pair of key and value in the cache while the function returns true.
-	 *
-	 * @param predicate The action to perform for each pair of key and value in the cache.
-	 * @return Whether iterating was interrupted (whether the predicate ever returned false).
-	 */
-	public boolean forEachWhile(LongObjPredicate<? super T> predicate) {
-		return delegate.forEachWhile(predicate);
-	}
-
-	/**
-	 * Gets the first non-null value produced by the given function which is applied to every pair of keys and values
-	 * in the cache.
-	 *
-	 * @param function The function to apply to each pair.
-	 * @return The first non-null value produced by the given function
-	 */
-	public <Z> Z findResult(LongObjFunction<? super T, ? extends Z> function) {
-		return delegate.findResult(function);
-	}
+    /**
+     * Gets the first non-null value produced by the given function which is applied to every pair of keys and values
+     * in the cache.
+     *
+     * @param function The function to apply to each pair.
+     * @return The first non-null value produced by the given function
+     */
+    public <Z> Z findResult(BiFunction<Long, ? super T, ? extends Z> function) {
+        return delegate.findResult(function);
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -385,17 +362,17 @@ public final class Cache<T extends IIDLinkedObject> implements Iterable<T> {
 		/**
 		 * The backing map.
 		 */
-		private final LongMap<T> backing;
+		private final Map<Long, T> backing;
 		/**
 		 * The lock used for read and write operations.
 		 */
 		private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 		public MapCacheDelegate() {
-			this(LongMap.newMap());
+			this(new HashMap<>());
 		}
 
-		public MapCacheDelegate(LongMap<T> backing) {
+		public MapCacheDelegate(Map<Long, T> backing) {
 			this.backing = backing;
 		}
 
@@ -472,7 +449,7 @@ public final class Cache<T extends IIDLinkedObject> implements Iterable<T> {
 		}
 
 		@Override
-		public LongSet longIDs() {
+		public Set<Long> longIDs() {
 			lock.readLock().lock();
 			try {
 				return backing.keySet();
@@ -491,55 +468,40 @@ public final class Cache<T extends IIDLinkedObject> implements Iterable<T> {
 			}
 		}
 
-		@Override
-		public ICacheDelegate<T> copy() {
-			return new MapCacheDelegate<>(mapCopy());
-		}
+        @Override
+        public boolean forEachWhile(BiPredicate<Long, ? super T> predicate) {
+            lock.readLock().lock();
+            try {
+                for (long k : backing.keySet()) {
+                    if (!predicate.test(k, backing.get(k))) {
+                        return true;
+                    }
+                }
+                return false;
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
 
-		@Override
-		public LongMap<T> mapCopy() {
-			lock.readLock().lock();
-			try {
-				return LongMap.copyMap(backing);
-			} finally {
-				lock.readLock().unlock();
-			}
-		}
+        @Override
+        public Map<Long, T> asMap() {
+            return backing;
+        }
 
-		@Override
-		public void forEach(LongObjConsumer<? super T> action) {
-			lock.readLock().lock();
-			try {
-				backing.forEach(action);
-			} finally {
-				lock.readLock().unlock();
-			}
-		}
-
-		@Override
-		public boolean forEachWhile(LongObjPredicate<? super T> predicate) {
-			lock.readLock().lock();
-			try {
-				return backing.forEachWhile(predicate);
-			} finally {
-				lock.readLock().unlock();
-			}
-		}
-
-		@Override
-		public <Z> Z findResult(LongObjFunction<? super T, ? extends Z> function) {
-			AtomicReference<Z> result = new AtomicReference<>();
-			forEachWhile((key, value) -> {
-				Z tmp = function.apply(key, value);
-				if (tmp != null) {
-					result.set(tmp);
-					return false;
-				}
-				return true;
-			});
-			return result.get();
-		}
-	}
+        @Override
+        public <Z> Z findResult(BiFunction<Long, ? super T, ? extends Z> function) {
+            AtomicReference<Z> result = new AtomicReference<>();
+            forEachWhile((key, value) -> {
+                Z tmp = function.apply(key, value);
+                if (tmp != null) {
+                    result.set(tmp);
+                    return false;
+                }
+                return true;
+            });
+            return result.get();
+        }
+    }
 
 	/**
 	 * A cache delegate which stores nothing.
@@ -612,8 +574,8 @@ public final class Cache<T extends IIDLinkedObject> implements Iterable<T> {
 		 * @return An empty long set.
 		 */
 		@Override
-		public LongSet longIDs() {
-			return LongMap.EmptyLongSet.INSTANCE;
+		public Set<Long> longIDs() {
+			return Collections.emptySet();
 		}
 
 		/**
@@ -626,52 +588,21 @@ public final class Cache<T extends IIDLinkedObject> implements Iterable<T> {
 			return Collections.emptySet();
 		}
 
-		/**
-		 * Returns the same cache delegate instance.
-		 *
-		 * @return The same cache delegate instance.
-		 */
-		@Override
-		public ICacheDelegate<T> copy() {
-			return this;
-		}
+        @Override
+        public boolean forEachWhile(BiPredicate<Long, ? super T> predicate) {
+            return true;
+        }
 
-		/**
-		 * Returns an empty long map.
-		 *
-		 * @return An empty long map.
-		 */
-		@Override
-		public LongMap<T> mapCopy() {
-			return LongMap.emptyMap();
-		}
+        @Override
+        public Map<Long, T> asMap() {
+            return Collections.emptyMap();
+        }
 
-		/**
-		 * No-op. Does nothing.
-		 */
-		@Override
-		public void forEach(LongObjConsumer<? super T> action) {}
-
-		/**
-		 * No-op. Does nothing.
-		 *
-		 * @return True.
-		 */
-		@Override
-		public boolean forEachWhile(LongObjPredicate<? super T> predicate) {
-			return true;
-		}
-
-		/**
-		 * No-op. Does nothing.
-		 *
-		 * @return Null.
-		 */
-		@Override
-		public <Z> Z findResult(LongObjFunction<? super T, ? extends Z> function) {
-			return null;
-		}
-	}
+        @Override
+        public <Z> Z findResult(BiFunction<Long, ? super T, ? extends Z> function) {
+            return null;
+        }
+    }
 }
 
 /**

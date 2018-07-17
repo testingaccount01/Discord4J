@@ -43,10 +43,8 @@ import sx.blah.discord.handle.audit.entry.option.OptionMap;
 import sx.blah.discord.handle.impl.obj.*;
 import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.LogMarkers;
-import sx.blah.discord.util.LongMapCollector;
 import sx.blah.discord.util.RequestBuilder;
 import sx.blah.discord.util.cache.Cache;
-import sx.blah.discord.util.cache.LongMap;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -57,10 +55,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -135,7 +135,7 @@ public class DiscordUtils {
 	public static final Pattern NSFW_CHANNEL_PATTERN = Pattern.compile("^nsfw(-|$)");
 
 	/**
-	 * Pattern for Discord's valid streaming URL strings passed to {@link IShard#streaming(String, String)}.
+	 * Pattern for Discord's valid streaming URL strings.
 	 */
 	public static final Pattern STREAM_URL_PATTERN = Pattern.compile("https?://(www\\.)?twitch\\.tv/.+");
 
@@ -737,17 +737,17 @@ public class DiscordUtils {
 	 * @return The converted audit log object.
 	 */
 	public static AuditLog getAuditLogFromJSON(IGuild guild, AuditLogObject json) {
-		LongMap<IUser> users = Arrays.stream(json.users)
+		Map<Long, IUser> users = Arrays.stream(json.users)
 				.map(u -> DiscordUtils.getUserFromJSON(guild.getShard(), u))
-				.collect(LongMapCollector.toLongMap());
+				.collect(Collectors.toMap(User::getLongID, Function.identity()));
 
-		LongMap<IWebhook> webhooks = Arrays.stream(json.webhooks)
+        Map<Long, IWebhook> webhooks = Arrays.stream(json.webhooks)
 				.map(w -> DiscordUtils.getWebhookFromJSON(guild.getChannelByID(Long.parseUnsignedLong(w.channel_id)), w))
-				.collect(LongMapCollector.toLongMap());
+				.collect(Collectors.toMap(IWebhook::getLongID, Function.identity()));
 
-		LongMap<AuditLogEntry> entries = Arrays.stream(json.audit_log_entries)
+        Map<Long, AuditLogEntry> entries = Arrays.stream(json.audit_log_entries)
 				.map(e -> DiscordUtils.getAuditLogEntryFromJSON(guild, users, webhooks, e))
-				.collect(LongMapCollector.toLongMap());
+				.collect(Collectors.toMap(AuditLogEntry::getLongID, Function.identity()));
 
 		return new AuditLog(entries);
 	}
@@ -761,7 +761,7 @@ public class DiscordUtils {
 	 * @param json The converted audit log entry object.
 	 * @return The converted audit log entry.
 	 */
-	public static AuditLogEntry getAuditLogEntryFromJSON(IGuild guild, LongMap<IUser> users, LongMap<IWebhook> webhooks, AuditLogEntryObject json) {
+	public static AuditLogEntry getAuditLogEntryFromJSON(IGuild guild, Map<Long, IUser> users, Map<Long, IWebhook> webhooks, AuditLogEntryObject json) {
 		long targetID = json.target_id == null ? 0 : Long.parseUnsignedLong(json.target_id);
 		long id = Long.parseUnsignedLong(json.id);
 		IUser user = users.get(Long.parseUnsignedLong(json.user_id));

@@ -16,10 +16,10 @@
  */
 package sx.blah.discord.handle.obj;
 
-import sx.blah.discord.util.cache.LongMap;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A category in Discord.
@@ -138,14 +138,14 @@ public interface ICategory extends IDiscordObject<ICategory> {
 	 *
 	 * @return The user permissions overrides for the category.
 	 */
-	LongMap<PermissionOverride> getUserOverrides();
+	Map<Long, PermissionOverride> getUserOverrides();
 
 	/**
 	 * Gets the permissions overrides for roles. (Key = Role ID)
 	 *
 	 * @return The role permissions overrides for this category.
 	 */
-	LongMap<PermissionOverride> getRoleOverrides();
+    Map<Long, PermissionOverride> getRoleOverrides();
 
 	/**
 	 * Removes a user's permissions override.

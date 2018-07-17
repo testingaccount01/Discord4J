@@ -17,13 +17,11 @@
 
 package sx.blah.discord.util.cache;
 
-import com.koloboke.collect.set.LongSet;
-import com.koloboke.function.LongObjConsumer;
-import com.koloboke.function.LongObjFunction;
-import com.koloboke.function.LongObjPredicate;
 import sx.blah.discord.handle.obj.IIDLinkedObject;
 
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -157,7 +155,7 @@ public interface ICacheDelegate<T extends IIDLinkedObject> extends RandomAccess,
 	 *
 	 * @return The IDs of every object in the cache.
 	 */
-	LongSet longIDs();
+	Set<Long> longIDs();
 
 	/**
 	 * Gets every value in the cache.
@@ -166,43 +164,29 @@ public interface ICacheDelegate<T extends IIDLinkedObject> extends RandomAccess,
 	 */
 	Collection<T> values();
 
-	/**
-	 * Gets a copy of the cache.
-	 *
-	 * @return A copy of the cache.
-	 */
-	ICacheDelegate<T> copy();
+    /**
+     * Performs the given action for each pair of key and value in the cache while the function returns true.
+     *
+     * @param predicate The action to perform for each pair of key and value in the cache.
+     * @return Whether iterating was interrupted (whether the predicate ever returned false).
+     */
+    boolean forEachWhile(BiPredicate<Long, ? super T> predicate);
 
-	/**
-	 * Gets a copy of the cache as a long map.
-	 *
-	 * @return A copy of the cache as a long map.
-	 */
-	LongMap<T> mapCopy();
+    /**
+     * Gets a copy of the cache as a long map.
+     *
+     * @return A copy of the cache as a long map.
+     */
+    Map<Long, T> asMap();
 
-	/**
-	 * Performs the given action for each pair of key and value in the cache.
-	 *
-	 * @param action The action to perform for each pair of key and value in the cache.
-	 */
-	void forEach(LongObjConsumer<? super T> action);
-
-	/**
-	 * Performs the given action for each pair of key and value in the cache while the function returns true.
-	 *
-	 * @param predicate The action to perform for each pair of key and value in the cache.
-	 * @return Whether iterating was interrupted (whether the predicate ever returned false).
-	 */
-	boolean forEachWhile(LongObjPredicate<? super T> predicate);
-
-	/**
-	 * Gets the first non-null value produced by the given function which is applied to every pair of keys and values
-	 * in the cache.
-	 *
-	 * @param function The function to apply to each pair.
-	 * @return The first non-null value produced by the given function
-	 */
-	<Z> Z findResult(LongObjFunction<? super T, ? extends Z> function);
+    /**
+     * Gets the first non-null value produced by the given function which is applied to every pair of keys and values
+     * in the cache.
+     *
+     * @param function The function to apply to each pair.
+     * @return The first non-null value produced by the given function
+     */
+    <Z> Z findResult(BiFunction<Long, ? super T, ? extends Z> function);
 
 	@Override
 	default Spliterator<T> spliterator() {
