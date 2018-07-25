@@ -3,7 +3,6 @@ plugins {
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.8.0'
     id 'com.palantir.git-version' version '0.11.0'
-    id 'io.spring.dependency-management' version '1.0.4.RELEASE' apply false
 }
 
 ext {
@@ -26,7 +25,6 @@ ext {
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'io.spring.dependency-management'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
 
@@ -37,18 +35,16 @@ allprojects {
     sourceCompatibility = project_jdk
     targetCompatibility = project_jdk
 
-    dependencyManagement {
-        imports {
-            mavenBom "io.projectreactor:reactor-bom:$reactor_bom_version"
-        }
-    }
-
     repositories {
         jcenter()
         mavenCentral()
         maven { url "https://repo.spring.io/snapshot" }
         maven { url "https://repo.spring.io/milestone" }
         maven { url 'https://jitpack.io' }
+    }
+
+    dependencies {
+        implementation "io.projectreactor:reactor-bom:$reactor_bom_version"
     }
 
     tasks.withType(Javadoc) {
@@ -124,7 +120,6 @@ allprojects {
 
 subprojects {
     apply plugin: 'com.palantir.git-version'
-    apply plugin: 'io.spring.dependency-management'
 
     archivesBaseName = 'discord4j-' + project.name
 

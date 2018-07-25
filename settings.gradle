@@ -3,3 +3,5 @@ include 'rest'
 include 'gateway'
 include 'common'
 include 'store'
+
+enableFeaturePreview('IMPROVED_POM_SUPPORT')
