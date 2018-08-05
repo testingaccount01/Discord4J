@@ -17,10 +17,15 @@
 package discord4j.store.service;
 
 import discord4j.store.Store;
+import discord4j.store.broker.BiVariateStoreBroker;
+import discord4j.store.broker.StoreBroker;
+import discord4j.store.broker.simple.SimpleBiVariateStoreBroker;
+import discord4j.store.broker.simple.SimpleStoreBroker;
 import discord4j.store.noop.NoOpStoreService;
 import discord4j.store.primitive.LongObjStore;
 import discord4j.store.util.StoreContext;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.io.Serializable;
 
@@ -74,6 +79,61 @@ public interface StoreService {
      * @return The instance of the store.
      */
     <V extends Serializable> LongObjStore<V> provideLongObjStore(Class<V> valueClass);
+
+    /**
+     * This is called to build an implementation-dependent store broker. The broker is used to manage many instances of
+     * a specific store type by binding these instances to a specific long key.
+     *
+     * @param keyClass The key type for the stores to use.
+     * @param valueClass The value type for the stores to use.
+     * @return The {@link discord4j.store.broker.StoreBroker} implementation to use for this service.
+     *
+     * @see discord4j.store.broker.simple.SimpleStoreBroker
+     */
+    <K extends Comparable<K>, V extends Serializable> StoreBroker<Store<K, V>> provideStoreBroker(Class<K> keyClass,
+            Class<V> valueClass);
+
+    /**
+     * This is called to build an implementation-dependent store broker. The broker is used to manage many instances of
+     * a specific store type by binding these instances to a specific long key.
+     *
+     * <b>This is only called if this service has a valid long-obj store implementation!</b>
+     *
+     * @param valueClass The value type for the stores to use.
+     * @return The {@link discord4j.store.broker.StoreBroker} implementation to use for this service.
+     *
+     * @see discord4j.store.broker.simple.SimpleStoreBroker
+     */
+    <V extends Serializable> StoreBroker<LongObjStore<V>> provideStoreBroker(Class<V> valueClass);
+
+    /**
+     * This is called to build an implementation-dependent bivariate store broker. The difference between bivariate
+     * store brokers and normal store brokers are that these stores should be accessible via any of two potential keys.
+     *
+     * @param keyClass1 The first key option for stores.
+     * @param keyClass2 The second key option for stores.
+     * @param valueClass The value for the stores.
+     * @return The {@link discord4j.store.broker.BiVariateStoreBroker} implemetation for this service.
+     *
+     * @see discord4j.store.broker.simple.SimpleBiVariateStoreBroker
+     */
+    <K1 extends Comparable<K1>, K2 extends Comparable<K2>, V extends Serializable>
+        BiVariateStoreBroker<Store<K1, V>, Store<K2, V>> provideBiVariateStoreBroker(Class<K1> keyClass1,
+           Class<K2> keyClass2, Class<V> valueClass);
+
+    /**
+     * This is called to build an implementation-dependent bivariate store broker. The difference between bivariate
+     * store brokers and normal store brokers are that these stores should be accessible via any of two potential keys.
+     *
+     * <b>This is only called if this service has a valid long-obj store implementation!</b>
+     *
+     * @param valueClass The value for the stores.
+     * @return The {@link discord4j.store.broker.BiVariateStoreBroker} implemetation for this service.
+     *
+     * @see discord4j.store.broker.simple.SimpleBiVariateStoreBroker
+     */
+    <V extends Serializable> BiVariateStoreBroker<LongObjStore<V>, LongObjStore<V>> provideBiVariateStoreBroker(
+            Class<V> valueClass);
 
     /**
      * This is a lifecycle method called to signal that a store should allocate any necessary resources.

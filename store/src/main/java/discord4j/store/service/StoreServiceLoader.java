@@ -17,6 +17,8 @@
 package discord4j.store.service;
 
 import discord4j.store.Store;
+import discord4j.store.broker.BiVariateStoreBroker;
+import discord4j.store.broker.StoreBroker;
 import discord4j.store.noop.NoOpStoreService;
 import discord4j.store.primitive.ForwardingStoreService;
 import discord4j.store.primitive.LongObjStore;
@@ -144,6 +146,26 @@ public class StoreServiceLoader {
         @Override
         public <V extends Serializable> LongObjStore<V> provideLongObjStore(Class<V> valueClass) {
             return primitiveService.provideLongObjStore(valueClass);
+        }
+
+        @Override
+        public <K extends Comparable<K>, V extends Serializable> StoreBroker<Store<K, V>> provideStoreBroker(Class<K> keyClass, Class<V> valueClass) {
+            return genericService.provideStoreBroker(keyClass, valueClass);
+        }
+
+        @Override
+        public <V extends Serializable> StoreBroker<LongObjStore<V>> provideStoreBroker(Class<V> valueClass) {
+            return primitiveService.provideStoreBroker(valueClass);
+        }
+
+        @Override
+        public <K1 extends Comparable<K1>, K2 extends Comparable<K2>, V extends Serializable> BiVariateStoreBroker<Store<K1, V>, Store<K2, V>> provideBiVariateStoreBroker(Class<K1> keyClass1, Class<K2> keyClass2, Class<V> valueClass) {
+            return genericService.provideBiVariateStoreBroker(keyClass1, keyClass2, valueClass);
+        }
+
+        @Override
+        public <V extends Serializable> BiVariateStoreBroker<LongObjStore<V>, LongObjStore<V>> provideBiVariateStoreBroker(Class<V> valueClass) {
+            return primitiveService.provideBiVariateStoreBroker(valueClass);
         }
 
         @Override

@@ -17,11 +17,16 @@
 package discord4j.store.noop;
 
 import discord4j.store.Store;
+import discord4j.store.broker.BiVariateStoreBroker;
+import discord4j.store.broker.StoreBroker;
+import discord4j.store.broker.simple.SimpleBiVariateStoreBroker;
+import discord4j.store.broker.simple.SimpleStoreBroker;
 import discord4j.store.noop.primitive.NoOpLongObjStore;
 import discord4j.store.primitive.LongObjStore;
 import discord4j.store.service.StoreService;
 import discord4j.store.util.StoreContext;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.io.Serializable;
 
@@ -52,6 +57,26 @@ public class NoOpStoreService implements StoreService {
     @Override
     public <V extends Serializable> LongObjStore<V> provideLongObjStore(Class<V> valueClass) {
         return new NoOpLongObjStore<>();
+    }
+
+    @Override
+    public <K extends Comparable<K>, V extends Serializable> StoreBroker<Store<K, V>> provideStoreBroker(Class<K> keyClass, Class<V> valueClass) {
+        return new SimpleStoreBroker<>(l -> new NoOpStore<>());
+    }
+
+    @Override
+    public <V extends Serializable> StoreBroker<LongObjStore<V>> provideStoreBroker(Class<V> valueClass) {
+        return new SimpleStoreBroker<>(l -> new NoOpLongObjStore<>());
+    }
+
+    @Override
+    public <K1 extends Comparable<K1>, K2 extends Comparable<K2>, V extends Serializable> BiVariateStoreBroker<Store<K1, V>, Store<K2, V>> provideBiVariateStoreBroker(Class<K1> keyClass1, Class<K2> keyClass2, Class<V> valueClass) {
+        return new SimpleBiVariateStoreBroker<>((l1, l2) -> Tuples.of(new NoOpStore<>(), new NoOpStore<>()));
+    }
+
+    @Override
+    public <V extends Serializable> BiVariateStoreBroker<LongObjStore<V>, LongObjStore<V>> provideBiVariateStoreBroker(Class<V> valueClass) {
+        return new SimpleBiVariateStoreBroker<>((l1, l2) -> Tuples.of(new NoOpLongObjStore<>(), new NoOpLongObjStore<>()));
     }
 
     @Override
