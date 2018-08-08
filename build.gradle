@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.8.0'
+    id 'com.jfrog.artifactory' version '4.7.5'
     id 'com.gorylenko.gradle-git-properties' version '1.5.1' apply false
     id 'io.spring.dependency-management' version '1.0.4.RELEASE' apply false
 }
@@ -31,6 +32,7 @@ allprojects {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'com.jfrog.artifactory'
 
     group = artifact_group
     version = project_version
@@ -85,6 +87,33 @@ allprojects {
     artifacts {
         archives javadocJar
         archives sourcesJar
+    }
+
+    artifactory {
+        contextUrl = 'https://oss.jfrog.org'
+        resolve {
+            repository {
+                repoKey = 'libs-release'
+            }
+        }
+        publish {
+            repository {
+                // The Artifactory repository key to publish to
+                // when using oss.jfrog.org the credentials are from Bintray.
+                if (project.version.endsWith("-SNAPSHOT")) {
+                    repoKey = 'oss-snapshot-local'
+                } else {
+                    repoKey = 'oss-release-local'
+                }
+
+                username = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+                password = project.hasProperty('bintrayKey') ? project.property('bintrayKey') : System.getenv('BINTRAY_KEY')
+            }
+            defaults {
+                publications 'maven'
+                properties = [ 'bintray.repo': 'austinv11/maven', 'bintray.package': 'austinv11:Discord4J', 'bintray.version': project.version.toString() ]
+            }
+        }
     }
 
     bintray {
