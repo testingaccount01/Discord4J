@@ -22,9 +22,9 @@ import reactor.core.Disposable;
 import reactor.core.publisher.EmitterProcessor;
 import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
-import reactor.ipc.netty.ByteBufFlux;
-import reactor.ipc.netty.NettyPipeline;
-import reactor.ipc.netty.udp.UdpClient;
+import reactor.netty.ByteBufFlux;
+import reactor.netty.NettyPipeline;
+import reactor.netty.udp.UdpClient;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -42,14 +42,17 @@ public class VoiceSocket {
     private final FluxSink<ByteBuf> outboundSink = outbound.sink(FluxSink.OverflowStrategy.LATEST);
 
     Mono<Void> setup(String address, int port) {
-        return UdpClient.create(address, port)
-                .newHandler((in, out) -> {
-                    Disposable inboundSub = in.receive().subscribe(inbound::onNext);
+        return UdpClient.create()
+            .host(address)
+            .port(port)
+            .handle((in, out) -> {
+                Disposable inboundSub = in.receive().subscribe(inbound::onNext);
 
-                    return out.send(outbound.doOnTerminate(inboundSub::dispose))
-                            .options(NettyPipeline.SendOptions::flushOnEach);
-                })
-                .then();
+                return out.send(outbound.doOnTerminate(inboundSub::dispose))
+                    .options(NettyPipeline.SendOptions::flushOnEach);
+            })
+            .connect()
+            .then();
     }
 
     Mono<Tuple2<String, Integer>> performIpDiscovery(int ssrc) {
