@@ -49,7 +49,7 @@ class DefaultVoiceConnection implements VoiceConnection {
 
     @Override
     public Mono<Void> execute() {
-        return gatewayClient.execute("wss://" + endpoint + "?v=" + VoiceGatewayClient.VERSION);
+        return gatewayClient.execute("wss://" + endpoint + "/?v=" + VoiceGatewayClient.VERSION);
     }
 
     @Override
