@@ -17,6 +17,7 @@
 
 package discord4j.gateway;
 
+import discord4j.common.websocket.CloseStatus;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.junit.Before;
