@@ -16,17 +16,17 @@
  */
 package discord4j.gateway;
 
+import discord4j.common.websocket.CloseException;
+import discord4j.common.websocket.CloseHandlerAdapter;
+import discord4j.common.websocket.CloseStatus;
 import discord4j.gateway.json.GatewayPayload;
 import discord4j.gateway.json.Opcode;
 import discord4j.gateway.json.PayloadData;
 import discord4j.gateway.payload.PayloadReader;
 import discord4j.gateway.payload.PayloadWriter;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
-import io.netty.handler.ssl.SslCloseCompletionEvent;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -230,36 +230,5 @@ public class DiscordWebSocketHandler implements ConnectionObserver {
      */
     public UnicastProcessor<GatewayPayload<?>> outbound() {
         return outboundExchange;
-    }
-
-    private static class CloseHandlerAdapter extends ChannelInboundHandlerAdapter {
-
-        private final AtomicReference<CloseStatus> closeStatus;
-
-        private CloseHandlerAdapter(AtomicReference<CloseStatus> closeStatus) {
-            this.closeStatus = closeStatus;
-        }
-
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) {
-            if (msg instanceof CloseWebSocketFrame && ((CloseWebSocketFrame) msg).isFinalFragment()) {
-                CloseWebSocketFrame close = (CloseWebSocketFrame) msg;
-                log.debug("Close status: {} {}", close.statusCode(), close.reasonText());
-                closeStatus.set(new CloseStatus(close.statusCode(), close.reasonText()));
-            }
-            ctx.fireChannelRead(msg);
-        }
-
-        @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
-            if (evt instanceof SslCloseCompletionEvent) {
-                SslCloseCompletionEvent closeEvent = (SslCloseCompletionEvent) evt;
-                if (!closeEvent.isSuccess()) {
-                    log.debug("Abnormal close status: {}", closeEvent.cause().toString());
-                    closeStatus.set(new CloseStatus(1006, closeEvent.cause().toString()));
-                }
-            }
-            ctx.fireUserEventTriggered(evt);
-        }
     }
 }
